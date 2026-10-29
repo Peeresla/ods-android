@@ -48,6 +48,8 @@ class WalkthroughTest {
             Thread.sleep(1500); shot("splash-2")
         }
         need(By.text("Вход"), 20_000)
+        dev.wait(Until.gone(By.desc("Заставка")), 15_000)
+        Thread.sleep(300)
         shot("unlock")
 
         // Неверный пароль
@@ -122,7 +124,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Ошибки
-        need(By.textStartsWith("Ошибки")).click()
+        find(By.textStartsWith("Ошибки")).click()
         need(By.textStartsWith("Повторить ошибки"))
         Thread.sleep(500)
         shot("mistakes")
@@ -130,7 +132,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Ситуации
-        need(By.textStartsWith("Ситуации")).click()
+        find(By.textStartsWith("Ситуации")).click()
         need(By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(500)
         shot("scenarios")
@@ -152,7 +154,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // По документам
-        need(By.textStartsWith("По документам")).click()
+        find(By.textStartsWith("По документам")).click()
         need(By.textStartsWith("Раздел А"))
         Thread.sleep(500)
         shot("docs")
@@ -170,6 +172,14 @@ class WalkthroughTest {
         need(By.text("Норма выполнена"))
         Thread.sleep(600)
         shot("home-final")
+        saveFrameStats()
+    }
+
+    /** Статистика кадров за весь проход (Janky frames, перцентили времени кадра). */
+    private fun saveFrameStats() {
+        val pfd = instr.uiAutomation.executeShellCommand("dumpsys gfxinfo ${ctx.packageName}")
+        val text = android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).use { String(it.readBytes()) }
+        File(screens, "$tag-gfxinfo.txt").writeText(text)
     }
 
     private fun launch() {

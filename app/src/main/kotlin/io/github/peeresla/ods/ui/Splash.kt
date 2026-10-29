@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -95,6 +97,7 @@ fun Splash(modifier: Modifier = Modifier) {
         modifier
             .fillMaxSize()
             // Заставка перекрывает экран целиком: нажатия сквозь неё не проходят
+            .semantics { contentDescription = "Заставка" }
             .pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } } }
             .drawBehind {
                 drawRect(

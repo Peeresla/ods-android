@@ -6,6 +6,7 @@ PKG=io.github.peeresla.ods
 OUT=e2e-out
 mkdir -p "$OUT"
 FAIL=0
+echo "Масштаб анимаций: $(adb shell settings get global animator_duration_scale) / $(adb shell settings get global transition_animation_scale)" | tee "$OUT/anim-scale.txt"
 
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
