@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.using
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -76,12 +77,12 @@ fun TrainScreen(vm: AppViewModel) {
                 ) { key ->
                     // Уходящий вопрос показываем таким, каким он был
                     val shownCur = key.cur
+                    val chosen = shownCur.chosen
                     Column {
                         QuestionTags(b, key.question)
                         T(key.question.question, Modifier.padding(top = 6.dp, bottom = 16.dp), size = 20.sp, weight = FontWeight.SemiBold, lineHeight = 1.35.em)
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             val order = shownCur.order
-                            val chosen = shownCur.chosen
                             for (orig in order) {
                                 val look = when {
                                     chosen == null -> OptionLook.Normal

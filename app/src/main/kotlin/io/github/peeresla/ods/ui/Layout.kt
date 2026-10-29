@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 private val MaxContent = 640.dp
 
 /** Отступы снизу от панели жестов и клавиатуры; по бокам — от выреза камеры в горизонтальном положении. */
+@Composable
 private fun Modifier.screenInsets(): Modifier = this
     .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom))
     .windowInsetsPadding(WindowInsets.displayCutout.union(WindowInsets.navigationBars).only(WindowInsetsSides.Horizontal))
