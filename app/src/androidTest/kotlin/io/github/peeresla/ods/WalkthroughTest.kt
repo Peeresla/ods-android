@@ -212,13 +212,16 @@ class WalkthroughTest {
     private fun tap(sel: BySelector, timeout: Long = 10_000, scroll: Boolean = false) {
         repeat(8) {
             try {
-                (if (scroll) find(sel) else need(sel, timeout)).click()
+                // Нажатие по координатам: узел мог перерисоваться между поиском и нажатием
+                val c = (if (scroll) find(sel) else need(sel, timeout)).visibleCenter
+                dev.click(c.x, c.y)
                 return
             } catch (e: androidx.test.uiautomator.StaleObjectException) {
                 Thread.sleep(500)
             }
         }
-        (if (scroll) find(sel) else need(sel, timeout)).click()
+        val c = (if (scroll) find(sel) else need(sel, timeout)).visibleCenter
+        dev.click(c.x, c.y)
     }
 
     private var scrolls = 0
