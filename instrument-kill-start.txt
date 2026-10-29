@@ -1,0 +1,8 @@
+
+io.github.peeresla.ods.ExamKillTest:.
+
+Time: 24.775
+
+OK (1 test)
+
+

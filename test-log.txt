@@ -1,0 +1,9 @@
+--------- beginning of main
+10-29 06:05:10.783  4505  4551 I WalkthroughTest: scroll: display 1080x2400, list Rect(0, 271 - 1080, 2334)
+10-29 06:05:17.878  4505  4551 I WalkthroughTest: scroll: display 1080x2400, list Rect(0, 271 - 1080, 2334)
+10-29 06:08:17.119  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null
+10-29 06:08:19.649  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null
+10-29 06:08:22.185  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null
+10-29 06:08:24.712  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null
+10-29 06:08:31.216  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null
+10-29 06:08:33.750  6636  6656 I WalkthroughTest: scroll: display 720x1280, list null

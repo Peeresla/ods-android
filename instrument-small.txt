@@ -1,0 +1,31 @@
+
+io.github.peeresla.ods.WalkthroughTest:
+Error in walkthrough(io.github.peeresla.ods.WalkthroughTest):
+java.lang.AssertionError: Не найдено на экране: BySelector [TEXT='\QДальше\E']
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at io.github.peeresla.ods.WalkthroughTest.need(WalkthroughTest.kt:188)
+	at io.github.peeresla.ods.WalkthroughTest.tapOnce(WalkthroughTest.kt:232)
+	at io.github.peeresla.ods.WalkthroughTest.tap(WalkthroughTest.kt:225)
+	at io.github.peeresla.ods.WalkthroughTest.tap$default(WalkthroughTest.kt:222)
+	at io.github.peeresla.ods.WalkthroughTest.walkthrough(WalkthroughTest.kt:108)
+
+
+Time: 66.608
+There was 1 failure:
+1) walkthrough(io.github.peeresla.ods.WalkthroughTest)
+java.lang.AssertionError: Не найдено на экране: BySelector [TEXT='\QДальше\E']
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertNotNull(Assert.java:713)
+	at io.github.peeresla.ods.WalkthroughTest.need(WalkthroughTest.kt:188)
+	at io.github.peeresla.ods.WalkthroughTest.tapOnce(WalkthroughTest.kt:232)
+	at io.github.peeresla.ods.WalkthroughTest.tap(WalkthroughTest.kt:225)
+	at io.github.peeresla.ods.WalkthroughTest.tap$default(WalkthroughTest.kt:222)
+	at io.github.peeresla.ods.WalkthroughTest.walkthrough(WalkthroughTest.kt:108)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
