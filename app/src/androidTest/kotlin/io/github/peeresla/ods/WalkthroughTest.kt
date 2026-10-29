@@ -55,7 +55,7 @@ class WalkthroughTest {
         // Неверный пароль
         val field = need(By.clazz("android.widget.EditText"))
         field.text = "wrong-password"
-        tap(Sel.text("Открыть"))
+        tap(Sel.text("Открыть")) // расшифровка долгая — без повторного нажатия
         need(By.text("Неверный пароль"), 90_000)
         shot("unlock-wrong")
 
@@ -68,8 +68,7 @@ class WalkthroughTest {
         shot("home-first")
 
         // Тренировка: каждый вопрос открывается, правильный ответ засчитывается после перемешивания
-        tap(Sel.starts("Тренировка"))
-        need(By.text("отвечено подряд"))
+        tap(Sel.starts("Тренировка"), expect = By.text("отвечено подряд"))
         Thread.sleep(500)
         shot("train")
         repeat(6) { i ->
@@ -91,18 +90,15 @@ class WalkthroughTest {
         tap(Sel.text("Остаться"))
         Thread.sleep(400)
         dev.pressBack()
-        tap(Sel.text("Выйти"))
-        need(By.text("Ответов дано: 7"))
+        tap(Sel.text("Выйти"), expect = By.text("Ответов дано: 7"))
         Thread.sleep(500)
         shot("home-after-train")
 
         // Экзамен
-        tap(Sel.starts("Экзамен"))
-        need(By.text("Начать экзамен"))
+        tap(Sel.starts("Экзамен"), expect = By.text("Начать экзамен"))
         Thread.sleep(500)
         shot("exam-intro")
-        tap(Sel.text("Начать экзамен"))
-        need(By.textStartsWith("Вопрос 1 из"))
+        tap(Sel.text("Начать экзамен"), expect = By.textStartsWith("Вопрос 1 из"))
         Thread.sleep(600)
         shot("exam-question")
         repeat(3) { i ->
@@ -114,26 +110,22 @@ class WalkthroughTest {
             }
         }
         shot("exam-last")
-        tap(Sel.text("Завершить"))
-        need(By.text("Сдано"))
+        tap(Sel.text("Завершить"), expect = By.text("Сдано"))
         Thread.sleep(600)
         shot("exam-result")
-        tap(Sel.text("На главную"), scroll = true)
-        need(By.text("Тренажёр МЧС"))
+        tap(Sel.text("На главную"), scroll = true, expect = By.text("Тренажёр МЧС"))
         Thread.sleep(800)
         Thread.sleep(600)
 
         // Ошибки
-        tap(Sel.starts("Ошибки"), scroll = true)
-        need(By.textStartsWith("Повторить ошибки"))
+        tap(Sel.starts("Ошибки"), scroll = true, expect = By.textStartsWith("Повторить ошибки"))
         Thread.sleep(500)
         shot("mistakes")
         dev.pressBack()
         Thread.sleep(600)
 
         // Ситуации
-        tap(Sel.starts("Ситуации"), scroll = true)
-        need(By.textStartsWith("Тестовая ситуация"))
+        tap(Sel.starts("Ситуации"), scroll = true, expect = By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(500)
         shot("scenarios")
         tap(Sel.starts("Тестовая ситуация"))
@@ -142,8 +134,7 @@ class WalkthroughTest {
         need(By.text("Показать эталон"))
         need(By.clazz("android.widget.EditText")).text = "Доложить, уточнить обстановку"
         Thread.sleep(500)
-        tap(Sel.text("Показать эталон"), scroll = true)
-        need(By.text("Эталон"))
+        tap(Sel.text("Показать эталон"), scroll = true, expect = By.text("Эталон"))
         Thread.sleep(700)
         shot("scenario-reference")
         tap(Sel.text("Частично"), scroll = true)
@@ -155,16 +146,14 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // По документам
-        tap(Sel.starts("По документам"), scroll = true)
-        need(By.textStartsWith("Раздел А"))
+        tap(Sel.starts("По документам"), scroll = true, expect = By.textStartsWith("Раздел А"))
         Thread.sleep(500)
         shot("docs")
         dev.pressBack()
         Thread.sleep(600)
 
         // Настройки
-        tap(Sel.desc("Настройки"))
-        need(By.text("Порог «сдано»"))
+        tap(Sel.desc("Настройки"), expect = By.text("Порог «сдано»"))
         Thread.sleep(500)
         shot("settings")
         scrollDown()
@@ -230,7 +219,16 @@ class WalkthroughTest {
      * Нажатие по координатам из снимка дерева элементов (dumpWindowHierarchy). Снимок не «устаревает»,
      * в отличие от UiObject2, поэтому перерисовка экрана между поиском и нажатием не мешает.
      */
-    private fun tap(sel: Sel, timeout: Long = 10_000, scroll: Boolean = false) {
+    private fun tap(sel: Sel, timeout: Long = 10_000, scroll: Boolean = false, expect: BySelector? = null) {
+        // Нажатие могло прийтись на смену экрана — если ожидаемое не появилось, нажимаем ещё раз
+        repeat(3) {
+            tapOnce(sel, timeout, scroll)
+            if (expect == null || dev.wait(Until.hasObject(expect), 6000)) return
+        }
+        if (expect != null) need(expect, 20_000)
+    }
+
+    private fun tapOnce(sel: Sel, timeout: Long, scroll: Boolean) {
         if (scroll) find(sel.by) else need(sel.by, timeout)
         repeat(6) {
             val bounds = snapshotBounds(sel)
@@ -240,7 +238,7 @@ class WalkthroughTest {
             }
             Thread.sleep(400)
         }
-        need(sel.by, 1).let { throw AssertionError("Не удалось нажать: $sel") }
+        throw AssertionError("Не удалось нажать: $sel")
     }
 
     /** Ответить в тренировке: нажатие могло прийтись на уходящий экран — тогда нажимаем ещё раз. */
