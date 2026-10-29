@@ -72,9 +72,11 @@ core/   — вся логика на чистом Kotlin (повторяет app
 app/    — Android: Compose-экраны, хранилище, загрузка и расшифровка банка
 .github/workflows/build.yml              — тесты, сборка, публикация APK из main
 .github/workflows/create-signing-key.yml — разовое создание ключа подписи
+.github/workflows/e2e.yml                — проверка на эмуляторе (рабочие ветки и вручную)
 ```
 
 - Логику можно проверить без Android SDK: `./gradlew -PcoreOnly :core:test`.
 - Контрольные отпечатки настоящего банка: `ODS_BANK_JSON=/путь/к/questions.json ./gradlew -PcoreOnly :core:test`. Сам банк сюда не кладётся — этот репозиторий публичный.
 - Тестовый зашифрованный банк `core/src/test/resources/fixtures/test-bank.enc.json` сделан `tools/build.mjs` из `Stajirovka` с паролем `test-pass-123` (только для тестов). `web-backup.json` выгружен из настоящей веб-версии.
+- Проверка на эмуляторе (`ci/e2e.sh`, тесты в `app/src/androidTest`) проходит приложение как пользователь — вход, тренировка, экзамен, ситуации, настройки — на экране 1080×2400 в светлой и тёмной теме и на маленьком 360×640 dp, а также проверяет, что экзамен переживает убийство процесса. Скриншоты и журналы попадают в ветку `e2e-results`.
 - Секреты сборки: `ODS_KEYSTORE_BASE64`, `ODS_KEYSTORE_PASSWORD`, `ODS_KEY_ALIAS`, `ODS_KEY_PASSWORD`. Ключи подписи (`*.jks`, `*.keystore`) в репозиторий не коммитить.

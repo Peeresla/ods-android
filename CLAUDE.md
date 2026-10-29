@@ -21,4 +21,5 @@
 ## Проверка
 
 1. `./gradlew -PcoreOnly :core:test` — работает и без Android SDK.
-2. Android-часть собирается в GitHub Actions (`build.yml`) на каждый push; в `main` с ключом подписи — публикация в Releases.
+2. Проверка на эмуляторе — workflow «Проверка на эмуляторе» (на рабочих ветках сам, иначе Run workflow). Результаты — ветка `e2e-results`: `instrument-*.txt` и `screens/*.png`. Эмулятор медленный, изредка бывают сбои самого теста — смотреть скриншот `*-FAILED.png` и `*-FAILED-hierarchy.xml`.
+3. Android-часть собирается в GitHub Actions (`build.yml`) на каждый push; в `main` с ключом подписи — публикация в Releases.
