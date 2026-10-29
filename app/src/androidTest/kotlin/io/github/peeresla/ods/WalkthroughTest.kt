@@ -55,31 +55,31 @@ class WalkthroughTest {
         // Неверный пароль
         val field = need(By.clazz("android.widget.EditText"))
         field.text = "wrong-password"
-        need(By.text("Открыть")).tap()
+        tap(By.text("Открыть"))
         need(By.text("Неверный пароль"), 90_000)
         shot("unlock-wrong")
 
         need(By.clazz("android.widget.EditText")).text = "test-pass-123"
-        need(By.text("Открыть")).tap()
+        tap(By.text("Открыть"))
         need(By.textStartsWith("Тренировка"), 90_000)
         Thread.sleep(600)
         shot("home-first")
 
         // Тренировка: каждый вопрос открывается, правильный ответ засчитывается после перемешивания
-        need(By.textStartsWith("Тренировка")).tap()
+        tap(By.textStartsWith("Тренировка"))
         need(By.text("отвечено подряд"))
         Thread.sleep(500)
         shot("train")
         repeat(6) { i ->
-            find(By.text("Верно")).tap()
+            tap(By.text("Верно"), scroll = true)
             need(By.text("Дальше"))
             need(By.text("✓ Верно"))
             Thread.sleep(500)
             if (i == 0) shot("train-correct")
-            need(By.text("Дальше")).tap()
+            tap(By.text("Дальше"))
             Thread.sleep(600)
         }
-        find(By.textStartsWith("Неверно")).tap()
+        tap(By.textStartsWith("Неверно"), scroll = true)
         need(By.textStartsWith("✗ Неверно"))
         Thread.sleep(500)
         shot("train-wrong")
@@ -89,42 +89,42 @@ class WalkthroughTest {
         need(By.text("Выйти из тренировки?"))
         Thread.sleep(400)
         shot("leave-modal")
-        need(By.text("Остаться")).tap()
+        tap(By.text("Остаться"))
         Thread.sleep(400)
         dev.pressBack()
-        need(By.text("Выйти")).tap()
+        tap(By.text("Выйти"))
         need(By.text("Ответов дано: 7"))
         Thread.sleep(500)
         shot("home-after-train")
 
         // Экзамен
-        need(By.textStartsWith("Экзамен")).tap()
+        tap(By.textStartsWith("Экзамен"))
         need(By.text("Начать экзамен"))
         Thread.sleep(500)
         shot("exam-intro")
-        need(By.text("Начать экзамен")).tap()
+        tap(By.text("Начать экзамен"))
         need(By.textStartsWith("Вопрос 1 из"))
         Thread.sleep(600)
         shot("exam-question")
         repeat(3) { i ->
-            find(By.text("Верно")).tap()
+            tap(By.text("Верно"), scroll = true)
             Thread.sleep(400)
             if (i < 2) {
-                need(By.text("Дальше")).tap()
+                tap(By.text("Дальше"))
                 Thread.sleep(600)
             }
         }
         shot("exam-last")
-        need(By.text("Завершить")).tap()
+        tap(By.text("Завершить"))
         need(By.text("Сдано"))
         Thread.sleep(600)
         shot("exam-result")
-        find(By.text("На главную")).tap()
+        tap(By.text("На главную"), scroll = true)
         need(By.textStartsWith("Ошибки"))
         Thread.sleep(600)
 
         // Ошибки
-        find(By.textStartsWith("Ошибки")).tap()
+        tap(By.textStartsWith("Ошибки"), scroll = true)
         need(By.textStartsWith("Повторить ошибки"))
         Thread.sleep(500)
         shot("mistakes")
@@ -132,22 +132,22 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Ситуации
-        find(By.textStartsWith("Ситуации")).tap()
+        tap(By.textStartsWith("Ситуации"), scroll = true)
         need(By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(500)
         shot("scenarios")
-        need(By.textStartsWith("Тестовая ситуация")).tap()
+        tap(By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(800)
         shot("scenario-open")
         need(By.text("Показать эталон"))
         need(By.clazz("android.widget.EditText")).text = "Доложить, уточнить обстановку"
         dev.pressBack() // спрятать клавиатуру
         Thread.sleep(500)
-        need(By.text("Показать эталон")).tap()
+        tap(By.text("Показать эталон"))
         need(By.text("Эталон"))
         Thread.sleep(700)
         shot("scenario-reference")
-        find(By.text("Частично")).tap()
+        tap(By.text("Частично"), scroll = true)
         Thread.sleep(800)
         shot("scenario-graded")
         dev.pressBack()
@@ -156,7 +156,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // По документам
-        find(By.textStartsWith("По документам")).tap()
+        tap(By.textStartsWith("По документам"), scroll = true)
         need(By.textStartsWith("Раздел А"))
         Thread.sleep(500)
         shot("docs")
@@ -164,7 +164,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Настройки
-        need(By.desc("Настройки")).tap()
+        tap(By.desc("Настройки"))
         need(By.text("Порог «сдано»"))
         Thread.sleep(500)
         shot("settings")
@@ -211,15 +211,29 @@ class WalkthroughTest {
     }
 
     /** Нажать; элемент мог перерисоваться между поиском и нажатием — тогда ищем снова. */
-    private fun UiObject2.tap() {
-        try {
-            click()
-        } catch (e: androidx.test.uiautomator.StaleObjectException) {
-            Thread.sleep(300)
+    private fun tap(sel: BySelector, timeout: Long = 10_000, scroll: Boolean = false) {
+        repeat(3) {
+            try {
+                (if (scroll) find(sel) else need(sel, timeout)).click()
+                return
+            } catch (e: androidx.test.uiautomator.StaleObjectException) {
+                Thread.sleep(300)
+            }
         }
+        (if (scroll) find(sel) else need(sel, timeout)).click()
     }
 
     private fun scrollDown() {
+        val list = dev.findObject(By.scrollable(true))
+        if (list != null) {
+            try {
+                list.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
+                Thread.sleep(400)
+                return
+            } catch (e: androidx.test.uiautomator.StaleObjectException) {
+                // ниже — запасной вариант
+            }
+        }
         val w = dev.displayWidth
         val h = dev.displayHeight
         dev.swipe(w / 2, h * 3 / 4, w / 2, h / 4, 25)
