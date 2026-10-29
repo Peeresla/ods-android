@@ -43,6 +43,11 @@ kill_step start
 adb shell am force-stop $PKG
 kill_step resume
 
+# Этап 2: напоминание и виджет
+adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
+adb shell am instrument -w -e class $PKG.ExtrasTest $PKG.test/androidx.test.runner.AndroidJUnitRunner | tee "$OUT/instrument-extras.txt"
+grep -q "OK (3 tests)" "$OUT/instrument-extras.txt" || FAIL=1
+
 adb shell wm size 720x1280
 adb shell wm density 320
 run small
