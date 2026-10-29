@@ -9,6 +9,7 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.github.peeresla.ods.data.BankRepository
 import org.junit.Assert.assertNotNull
@@ -55,32 +56,32 @@ class WalkthroughTest {
         // Неверный пароль
         val field = need(By.clazz("android.widget.EditText"))
         field.text = "wrong-password"
-        tap(By.text("Открыть"))
+        tap(Sel.text("Открыть"))
         need(By.text("Неверный пароль"), 90_000)
         shot("unlock-wrong")
 
         need(By.text("Открыть"), 90_000)
         Thread.sleep(500)
         need(By.clazz("android.widget.EditText")).text = "test-pass-123"
-        tap(By.text("Открыть"))
+        tap(Sel.text("Открыть"))
         need(By.textStartsWith("Тренировка"), 90_000)
         Thread.sleep(600)
         shot("home-first")
 
         // Тренировка: каждый вопрос открывается, правильный ответ засчитывается после перемешивания
-        tap(By.textStartsWith("Тренировка"))
+        tap(Sel.starts("Тренировка"))
         need(By.text("отвечено подряд"))
         Thread.sleep(500)
         shot("train")
         repeat(6) { i ->
-            tap(By.text("Верно"), scroll = true)
+            tap(Sel.text("Верно"), scroll = true)
             need(By.text("Дальше"))
             Thread.sleep(500)
             if (i == 0) shot("train-correct")
-            tap(By.text("Дальше"))
+            tap(Sel.text("Дальше"))
             Thread.sleep(600)
         }
-        tap(By.textStartsWith("Неверно"), scroll = true)
+        tap(Sel.starts("Неверно"), scroll = true)
         need(By.text("Дальше"))
         Thread.sleep(500)
         shot("train-wrong")
@@ -90,43 +91,43 @@ class WalkthroughTest {
         need(By.text("Выйти из тренировки?"))
         Thread.sleep(400)
         shot("leave-modal")
-        tap(By.text("Остаться"))
+        tap(Sel.text("Остаться"))
         Thread.sleep(400)
         dev.pressBack()
-        tap(By.text("Выйти"))
+        tap(Sel.text("Выйти"))
         need(By.text("Ответов дано: 7"))
         Thread.sleep(500)
         shot("home-after-train")
 
         // Экзамен
-        tap(By.textStartsWith("Экзамен"))
+        tap(Sel.starts("Экзамен"))
         need(By.text("Начать экзамен"))
         Thread.sleep(500)
         shot("exam-intro")
-        tap(By.text("Начать экзамен"))
+        tap(Sel.text("Начать экзамен"))
         need(By.textStartsWith("Вопрос 1 из"))
         Thread.sleep(600)
         shot("exam-question")
         repeat(3) { i ->
-            tap(By.text("Верно"), scroll = true)
+            tap(Sel.text("Верно"), scroll = true)
             Thread.sleep(400)
             if (i < 2) {
-                tap(By.text("Дальше"))
+                tap(Sel.text("Дальше"))
                 Thread.sleep(600)
             }
         }
         shot("exam-last")
-        tap(By.text("Завершить"))
+        tap(Sel.text("Завершить"))
         need(By.text("Сдано"))
         Thread.sleep(600)
         shot("exam-result")
-        tap(By.text("На главную"), scroll = true)
+        tap(Sel.text("На главную"), scroll = true)
         need(By.text("Тренажёр МЧС"))
         Thread.sleep(800)
         Thread.sleep(600)
 
         // Ошибки
-        tap(By.textStartsWith("Ошибки"), scroll = true)
+        tap(Sel.starts("Ошибки"), scroll = true)
         need(By.textStartsWith("Повторить ошибки"))
         Thread.sleep(500)
         shot("mistakes")
@@ -134,21 +135,21 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Ситуации
-        tap(By.textStartsWith("Ситуации"), scroll = true)
+        tap(Sel.starts("Ситуации"), scroll = true)
         need(By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(500)
         shot("scenarios")
-        tap(By.textStartsWith("Тестовая ситуация"))
+        tap(Sel.starts("Тестовая ситуация"))
         Thread.sleep(800)
         shot("scenario-open")
         need(By.text("Показать эталон"))
         need(By.clazz("android.widget.EditText")).text = "Доложить, уточнить обстановку"
         Thread.sleep(500)
-        tap(By.text("Показать эталон"), scroll = true)
+        tap(Sel.text("Показать эталон"), scroll = true)
         need(By.text("Эталон"))
         Thread.sleep(700)
         shot("scenario-reference")
-        tap(By.text("Частично"), scroll = true)
+        tap(Sel.text("Частично"), scroll = true)
         Thread.sleep(800)
         shot("scenario-graded")
         dev.pressBack()
@@ -157,7 +158,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // По документам
-        tap(By.textStartsWith("По документам"), scroll = true)
+        tap(Sel.starts("По документам"), scroll = true)
         need(By.textStartsWith("Раздел А"))
         Thread.sleep(500)
         shot("docs")
@@ -165,7 +166,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Настройки
-        tap(By.desc("Настройки"))
+        tap(Sel.desc("Настройки"))
         need(By.text("Порог «сдано»"))
         Thread.sleep(500)
         shot("settings")
@@ -212,19 +213,29 @@ class WalkthroughTest {
     }
 
     /** Нажать; элемент мог перерисоваться между поиском и нажатием — тогда ищем снова. */
-    private fun tap(sel: BySelector, timeout: Long = 10_000, scroll: Boolean = false) {
-        repeat(8) {
-            try {
-                // Нажатие по координатам: узел мог перерисоваться между поиском и нажатием
-                val c = (if (scroll) find(sel) else need(sel, timeout)).visibleCenter
-                dev.click(c.x, c.y)
-                return
-            } catch (e: androidx.test.uiautomator.StaleObjectException) {
-                Thread.sleep(500)
-            }
+    /** Селектор в двух видах: для поиска (UiObject2) и для нажатия (UiObject). */
+    private class Sel(val by: BySelector, val ui: UiSelector) {
+        override fun toString() = by.toString()
+
+        companion object {
+            fun text(t: String) = Sel(By.text(t), UiSelector().text(t))
+            fun starts(t: String) = Sel(By.textStartsWith(t), UiSelector().textStartsWith(t))
+            fun desc(t: String) = Sel(By.desc(t), UiSelector().description(t))
         }
-        val c = (if (scroll) find(sel) else need(sel, timeout)).visibleCenter
-        dev.click(c.x, c.y)
+    }
+
+    /**
+     * Нажатие через UiObject (а не UiObject2): элемент ищется заново в момент нажатия,
+     * поэтому перерисовка экрана между поиском и нажатием не мешает.
+     */
+    private fun tap(sel: Sel, timeout: Long = 10_000, scroll: Boolean = false) {
+        if (scroll) find(sel.by) else need(sel.by, timeout)
+        val lazy = dev.findObject(sel.ui)
+        repeat(5) {
+            if (lazy.waitForExists(2000) && runCatching { lazy.click() }.getOrDefault(false)) return
+            Thread.sleep(400)
+        }
+        throw AssertionError("Не удалось нажать: $sel")
     }
 
     private var scrolls = 0

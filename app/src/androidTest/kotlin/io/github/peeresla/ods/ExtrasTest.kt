@@ -50,7 +50,8 @@ class ExtrasTest {
 
     @Test
     fun noReminderWhenGoalDone() {
-        dev.executeShellCommand("cmd notification cancel_all")
+        io.github.peeresla.ods.extras.ReminderNotifier.cancel(ctx)
+        Thread.sleep(500)
         writeState(Activity(lastDone = today, streak = 6, best = 6, today = today, todayCount = 12))
         ctx.sendBroadcast(Intent(ctx, AlarmReceiver::class.java).setAction(Scheduler.ACTION_REMIND))
         Thread.sleep(2000)
@@ -58,7 +59,7 @@ class ExtrasTest {
         val n = dev.wait(Until.findObject(By.text("Начальник ЦУКС")), 3000)
         shot("notify-none")
         dev.pressBack()
-        assertNull("Напоминание пришло, хотя норма выполнена", n)
+        assertNull("Напоминание пришло, хотя норма выполнена", n?.let { "уведомление в шторке" })
     }
 
     @Test
