@@ -55,31 +55,31 @@ class WalkthroughTest {
         // Неверный пароль
         val field = need(By.clazz("android.widget.EditText"))
         field.text = "wrong-password"
-        need(By.text("Открыть")).click()
+        need(By.text("Открыть")).tap()
         need(By.text("Неверный пароль"), 90_000)
         shot("unlock-wrong")
 
         need(By.clazz("android.widget.EditText")).text = "test-pass-123"
-        need(By.text("Открыть")).click()
+        need(By.text("Открыть")).tap()
         need(By.textStartsWith("Тренировка"), 90_000)
         Thread.sleep(600)
         shot("home-first")
 
         // Тренировка: каждый вопрос открывается, правильный ответ засчитывается после перемешивания
-        need(By.textStartsWith("Тренировка")).click()
+        need(By.textStartsWith("Тренировка")).tap()
         need(By.text("отвечено подряд"))
         Thread.sleep(500)
         shot("train")
         repeat(6) { i ->
-            find(By.text("Верно")).click()
+            find(By.text("Верно")).tap()
             need(By.text("Дальше"))
             need(By.text("✓ Верно"))
             Thread.sleep(500)
             if (i == 0) shot("train-correct")
-            need(By.text("Дальше")).click()
+            need(By.text("Дальше")).tap()
             Thread.sleep(600)
         }
-        find(By.textStartsWith("Неверно")).click()
+        find(By.textStartsWith("Неверно")).tap()
         need(By.textStartsWith("✗ Неверно"))
         Thread.sleep(500)
         shot("train-wrong")
@@ -89,42 +89,42 @@ class WalkthroughTest {
         need(By.text("Выйти из тренировки?"))
         Thread.sleep(400)
         shot("leave-modal")
-        need(By.text("Остаться")).click()
+        need(By.text("Остаться")).tap()
         Thread.sleep(400)
         dev.pressBack()
-        need(By.text("Выйти")).click()
+        need(By.text("Выйти")).tap()
         need(By.text("Ответов дано: 7"))
         Thread.sleep(500)
         shot("home-after-train")
 
         // Экзамен
-        need(By.textStartsWith("Экзамен")).click()
+        need(By.textStartsWith("Экзамен")).tap()
         need(By.text("Начать экзамен"))
         Thread.sleep(500)
         shot("exam-intro")
-        need(By.text("Начать экзамен")).click()
+        need(By.text("Начать экзамен")).tap()
         need(By.textStartsWith("Вопрос 1 из"))
         Thread.sleep(600)
         shot("exam-question")
         repeat(3) { i ->
-            find(By.text("Верно")).click()
+            find(By.text("Верно")).tap()
             Thread.sleep(400)
             if (i < 2) {
-                need(By.text("Дальше")).click()
+                need(By.text("Дальше")).tap()
                 Thread.sleep(600)
             }
         }
         shot("exam-last")
-        need(By.text("Завершить")).click()
+        need(By.text("Завершить")).tap()
         need(By.text("Сдано"))
         Thread.sleep(600)
         shot("exam-result")
-        find(By.text("На главную")).click()
+        find(By.text("На главную")).tap()
         need(By.textStartsWith("Ошибки"))
         Thread.sleep(600)
 
         // Ошибки
-        find(By.textStartsWith("Ошибки")).click()
+        find(By.textStartsWith("Ошибки")).tap()
         need(By.textStartsWith("Повторить ошибки"))
         Thread.sleep(500)
         shot("mistakes")
@@ -132,20 +132,22 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Ситуации
-        find(By.textStartsWith("Ситуации")).click()
+        find(By.textStartsWith("Ситуации")).tap()
         need(By.textStartsWith("Тестовая ситуация"))
         Thread.sleep(500)
         shot("scenarios")
-        need(By.textStartsWith("Тестовая ситуация")).click()
+        need(By.textStartsWith("Тестовая ситуация")).tap()
+        Thread.sleep(800)
+        shot("scenario-open")
         need(By.text("Показать эталон"))
         need(By.clazz("android.widget.EditText")).text = "Доложить, уточнить обстановку"
         dev.pressBack() // спрятать клавиатуру
         Thread.sleep(500)
-        need(By.text("Показать эталон")).click()
+        need(By.text("Показать эталон")).tap()
         need(By.text("Эталон"))
         Thread.sleep(700)
         shot("scenario-reference")
-        find(By.text("Частично")).click()
+        find(By.text("Частично")).tap()
         Thread.sleep(800)
         shot("scenario-graded")
         dev.pressBack()
@@ -154,7 +156,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // По документам
-        find(By.textStartsWith("По документам")).click()
+        find(By.textStartsWith("По документам")).tap()
         need(By.textStartsWith("Раздел А"))
         Thread.sleep(500)
         shot("docs")
@@ -162,7 +164,7 @@ class WalkthroughTest {
         Thread.sleep(600)
 
         // Настройки
-        need(By.desc("Настройки")).click()
+        need(By.desc("Настройки")).tap()
         need(By.text("Порог «сдано»"))
         Thread.sleep(500)
         shot("settings")
@@ -191,7 +193,10 @@ class WalkthroughTest {
 
     private fun need(sel: BySelector, timeout: Long = 10_000): UiObject2 {
         val o = dev.wait(Until.findObject(sel), timeout)
-        if (o == null) shot("FAILED")
+        if (o == null) {
+            shot("FAILED")
+            File(screens, "$tag-FAILED-hierarchy.xml").outputStream().use { dev.dumpWindowHierarchy(it) }
+        }
         assertNotNull("Не найдено на экране: $sel", o)
         return o!!
     }
@@ -203,6 +208,15 @@ class WalkthroughTest {
             scrollDown()
         }
         return need(sel, 2000)
+    }
+
+    /** Нажать; элемент мог перерисоваться между поиском и нажатием — тогда ищем снова. */
+    private fun UiObject2.tap() {
+        try {
+            click()
+        } catch (e: androidx.test.uiautomator.StaleObjectException) {
+            Thread.sleep(300)
+        }
     }
 
     private fun scrollDown() {

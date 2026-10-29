@@ -27,6 +27,16 @@ run light
 adb shell cmd uimode night yes
 run dark
 adb shell cmd uimode night no
+
+# Экзамен после убийства процесса: два отдельных запуска
+kill_step() {
+  adb shell am instrument -w -e class "$PKG.ExamKillTest#$1" $PKG.test/androidx.test.runner.AndroidJUnitRunner | tee "$OUT/instrument-kill-$1.txt"
+  grep -q "OK (1 test)" "$OUT/instrument-kill-$1.txt" || FAIL=1
+}
+kill_step start
+adb shell am force-stop $PKG
+kill_step resume
+
 adb shell wm size 720x1280
 adb shell wm density 320
 run small
