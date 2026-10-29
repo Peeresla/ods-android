@@ -16,7 +16,7 @@ class BankRepository(context: Context) {
     /** Свежий файл с сайта. Таймаут около 5 с, затем — null (будет использован кэш). */
     suspend fun fetch(): String? = withContext(Dispatchers.IO) {
         runCatching {
-            val conn = URL(BANK_URL).openConnection() as HttpURLConnection
+            val conn = URL(urlOverride ?: BANK_URL).openConnection() as HttpURLConnection
             try {
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
@@ -51,5 +51,9 @@ class BankRepository(context: Context) {
 
     companion object {
         const val BANK_URL = "https://peeresla.github.io/ods/questions.enc.json"
+
+        /** Только для сквозных тестов: другой адрес банка (например, недоступный — проверка работы офлайн). */
+        @Volatile
+        var urlOverride: String? = null
     }
 }

@@ -95,7 +95,7 @@ fun Modifier.pressable(
             }
         }
     }
-    .semantics {
+    .semantics(mergeDescendants = true) {
         role = Role.Button
         if (!enabled) disabled()
         onClick { if (enabled) action(); enabled }
