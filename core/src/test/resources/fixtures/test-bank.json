@@ -1,0 +1,21 @@
+{
+  "version": "test-1",
+  "updated": "2026-01-15",
+  "note": "Тестовый банк для юнит-тестов. Не настоящие вопросы.",
+  "categories": [
+    { "id": "a", "title": "Раздел А" },
+    { "id": "b", "title": "Раздел Б" }
+  ],
+  "questions": [
+    { "id": 1, "category": "a", "question": "Тестовый вопрос 1", "options": ["Верно", "Неверно 1", "Неверно 2"], "correct": 0, "explanation": "Пояснение 1", "source": "Источник 1" },
+    { "id": 2, "category": "a", "question": "Тестовый вопрос 2", "options": ["Неверно", "Верно"], "correct": 1, "internal": true },
+    { "id": 3, "category": "b", "question": "Тестовый вопрос 3", "options": ["Неверно", "Неверно", "Верно", "Неверно"], "correct": 2 },
+    { "id": 4, "category": "b", "question": "Без вариантов", "options": [], "correct": 0 },
+    { "id": 5, "category": "b", "question": "correct вне диапазона", "options": ["x", "y"], "correct": 5 },
+    { "id": 3, "category": "b", "question": "Повтор id", "options": ["x", "y"], "correct": 0 }
+  ],
+  "scenarios": [
+    { "id": "s1", "title": "Тестовая ситуация", "situation": "Тестовая ситуация: что делать?", "answer": ["Шаг 1", "Шаг 2"], "internal": true },
+    { "id": "s2", "situation": "Вторая ситуация без названия", "answer": [] }
+  ]
+}

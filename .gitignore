@@ -1,0 +1,14 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/
+# Ключи подписи и секреты в репозиторий не кладём
+*.jks
+*.keystore
+*.p12
+.env
+keystore.properties
