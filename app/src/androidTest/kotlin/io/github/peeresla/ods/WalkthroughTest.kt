@@ -141,9 +141,8 @@ class WalkthroughTest {
         shot("scenario-open")
         need(By.text("Показать эталон"))
         need(By.clazz("android.widget.EditText")).text = "Доложить, уточнить обстановку"
-        dev.pressBack() // спрятать клавиатуру
         Thread.sleep(500)
-        tap(By.text("Показать эталон"))
+        tap(By.text("Показать эталон"), scroll = true)
         need(By.text("Эталон"))
         Thread.sleep(700)
         shot("scenario-reference")
@@ -223,12 +222,16 @@ class WalkthroughTest {
         (if (scroll) find(sel) else need(sel, timeout)).click()
     }
 
+    private var scrolls = 0
+
     private fun scrollDown() {
         val list = dev.findObject(By.scrollable(true))
+        android.util.Log.i("WalkthroughTest", "scroll: display ${dev.displayWidth}x${dev.displayHeight}, list ${list?.visibleBounds}")
         if (list != null) {
             try {
-                list.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
+                val moved = list.scroll(androidx.test.uiautomator.Direction.DOWN, 0.6f)
                 Thread.sleep(400)
+                if (++scrolls <= 3) shot("scroll-$moved")
                 return
             } catch (e: androidx.test.uiautomator.StaleObjectException) {
                 // ниже — запасной вариант

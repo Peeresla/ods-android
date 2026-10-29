@@ -43,5 +43,6 @@ run small
 
 adb exec-out run-as $PKG tar c -C files screens > "$OUT/screens.tar" && tar xf "$OUT/screens.tar" -C "$OUT" && rm "$OUT/screens.tar"
 adb logcat -d -s AndroidRuntime:E > "$OUT/crashes.txt" || true
+adb logcat -d -s WalkthroughTest:I > "$OUT/test-log.txt" || true
 ls "$OUT/screens" | head -100
 exit $FAIL
