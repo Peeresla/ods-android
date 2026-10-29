@@ -120,7 +120,7 @@ class WalkthroughTest {
         Thread.sleep(600)
         shot("exam-result")
         tap(By.text("На главную"), scroll = true)
-        need(By.textStartsWith("Ошибки"))
+        need(By.textStartsWith("Тренировка"))
         Thread.sleep(600)
 
         // Ошибки
