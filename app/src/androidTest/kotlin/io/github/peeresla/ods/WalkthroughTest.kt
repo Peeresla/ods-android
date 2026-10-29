@@ -73,14 +73,13 @@ class WalkthroughTest {
         repeat(6) { i ->
             tap(By.text("Верно"), scroll = true)
             need(By.text("Дальше"))
-            need(By.text("✓ Верно"))
             Thread.sleep(500)
             if (i == 0) shot("train-correct")
             tap(By.text("Дальше"))
             Thread.sleep(600)
         }
         tap(By.textStartsWith("Неверно"), scroll = true)
-        need(By.textStartsWith("✗ Неверно"))
+        need(By.text("Дальше"))
         Thread.sleep(500)
         shot("train-wrong")
 

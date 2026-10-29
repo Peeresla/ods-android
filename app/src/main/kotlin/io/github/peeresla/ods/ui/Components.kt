@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -233,6 +235,14 @@ fun OptionButton(
             }
             .heightIn(min = 52.dp)
             .pressFeedback(enabled = enabled, ripple = true, delayed = false, shape = BtnShape, base = base, held = held, rippleColor = c.text, onClick = onClick)
+            .semantics {
+                when (look) {
+                    OptionLook.Correct -> stateDescription = "правильный ответ"
+                    OptionLook.Wrong -> stateDescription = "неверный ответ"
+                    OptionLook.Selected -> stateDescription = "выбрано"
+                    OptionLook.Normal -> Unit
+                }
+            }
             .border(1.5.dp, border, BtnShape)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         contentAlignment = Alignment.CenterStart,
