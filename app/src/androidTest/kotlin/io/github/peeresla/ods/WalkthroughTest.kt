@@ -210,12 +210,12 @@ class WalkthroughTest {
 
     /** Нажать; элемент мог перерисоваться между поиском и нажатием — тогда ищем снова. */
     private fun tap(sel: BySelector, timeout: Long = 10_000, scroll: Boolean = false) {
-        repeat(3) {
+        repeat(8) {
             try {
                 (if (scroll) find(sel) else need(sel, timeout)).click()
                 return
             } catch (e: androidx.test.uiautomator.StaleObjectException) {
-                Thread.sleep(300)
+                Thread.sleep(500)
             }
         }
         (if (scroll) find(sel) else need(sel, timeout)).click()
