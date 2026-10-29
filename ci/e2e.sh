@@ -8,11 +8,17 @@ mkdir -p "$OUT"
 FAIL=0
 echo "Масштаб анимаций: $(adb shell settings get global animator_duration_scale) / $(adb shell settings get global transition_animation_scale)" | tee "$OUT/anim-scale.txt"
 
+# Системные окна «приложение не отвечает» на медленном эмуляторе мешают проверке — скрываем их
+adb shell settings put global hide_error_dialogs 1 || true
+sleep 20
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null || true
+
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 
 run() {
   local tag=$1
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS > /dev/null || true
   adb shell dumpsys gfxinfo $PKG reset > /dev/null 2>&1 || true
   adb shell am instrument -w -e tag "$tag" -e class $PKG.WalkthroughTest $PKG.test/androidx.test.runner.AndroidJUnitRunner | tee "$OUT/instrument-$tag.txt"
   grep -q "OK (1 test)" "$OUT/instrument-$tag.txt" || FAIL=1
