@@ -9,7 +9,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import io.github.peeresla.ods.data.BankRepository
 import org.junit.Assert.assertNotNull
@@ -213,30 +212,56 @@ class WalkthroughTest {
     }
 
     /** Нажать; элемент мог перерисоваться между поиском и нажатием — тогда ищем снова. */
-    /** Селектор в двух видах: для поиска (UiObject2) и для нажатия (UiObject). */
-    private class Sel(val by: BySelector, val ui: UiSelector) {
+    /** Селектор: для ожидания (BySelector) и для поиска в снимке дерева элементов. */
+    private class Sel(val by: BySelector, val attr: String, val value: String, val prefix: Boolean) {
         override fun toString() = by.toString()
 
+        fun matches(node: Map<String, String>): Boolean {
+            val v = node[attr] ?: return false
+            return if (prefix) v.startsWith(value) else v == value
+        }
+
         companion object {
-            fun text(t: String) = Sel(By.text(t), UiSelector().text(t))
-            fun starts(t: String) = Sel(By.textStartsWith(t), UiSelector().textStartsWith(t))
-            fun desc(t: String) = Sel(By.desc(t), UiSelector().description(t))
+            fun text(t: String) = Sel(By.text(t), "text", t, false)
+            fun starts(t: String) = Sel(By.textStartsWith(t), "text", t, true)
+            fun desc(t: String) = Sel(By.desc(t), "content-desc", t, false)
         }
     }
 
     /**
-     * Нажатие через UiObject (а не UiObject2): элемент ищется заново в момент нажатия,
-     * поэтому перерисовка экрана между поиском и нажатием не мешает.
+     * Нажатие по координатам из снимка дерева элементов (dumpWindowHierarchy). Снимок не «устаревает»,
+     * в отличие от UiObject2, поэтому перерисовка экрана между поиском и нажатием не мешает.
      */
     private fun tap(sel: Sel, timeout: Long = 10_000, scroll: Boolean = false) {
         if (scroll) find(sel.by) else need(sel.by, timeout)
-        val lazy = dev.findObject(sel.ui)
-        repeat(5) {
-            if (lazy.waitForExists(2000) && runCatching { lazy.click() }.getOrDefault(false)) return
+        repeat(6) {
+            val bounds = snapshotBounds(sel)
+            if (bounds != null) {
+                dev.click(bounds.centerX(), bounds.centerY())
+                return
+            }
             Thread.sleep(400)
         }
-        throw AssertionError("Не удалось нажать: $sel")
+        need(sel.by, 1).let { throw AssertionError("Не удалось нажать: $sel") }
     }
+
+    private fun snapshotBounds(sel: Sel): android.graphics.Rect? {
+        val out = java.io.ByteArrayOutputStream()
+        dev.dumpWindowHierarchy(out)
+        val xml = out.toString("UTF-8")
+        for (m in Regex("<node ([^>]*)>").findAll(xml)) {
+            val attrs = Regex("([a-z-]+)=\"([^\"]*)\"").findAll(m.groupValues[1]).associate { it.groupValues[1] to unescape(it.groupValues[2]) }
+            if (attrs["package"] != ctx.packageName || !sel.matches(attrs)) continue
+            val b = Regex("\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]").find(attrs["bounds"] ?: continue) ?: continue
+            val (l, t, r, btm) = b.destructured
+            val rect = android.graphics.Rect(l.toInt(), t.toInt(), r.toInt(), btm.toInt())
+            if (rect.width() > 0 && rect.height() > 0) return rect
+        }
+        return null
+    }
+
+    private fun unescape(v: String) =
+        v.replace("&#10;", "\n").replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&apos;", "'").replace("&amp;", "&")
 
     private var scrolls = 0
 
