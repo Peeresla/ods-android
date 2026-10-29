@@ -73,15 +73,13 @@ class WalkthroughTest {
         Thread.sleep(500)
         shot("train")
         repeat(6) { i ->
-            tap(Sel.text("Верно"), scroll = true)
-            need(By.text("Дальше"))
+            answer(Sel.text("Верно"))
             Thread.sleep(500)
             if (i == 0) shot("train-correct")
             tap(Sel.text("Дальше"))
             Thread.sleep(600)
         }
-        tap(Sel.starts("Неверно"), scroll = true)
-        need(By.text("Дальше"))
+        answer(Sel.starts("Неверно"))
         Thread.sleep(500)
         shot("train-wrong")
 
@@ -243,6 +241,15 @@ class WalkthroughTest {
             Thread.sleep(400)
         }
         need(sel.by, 1).let { throw AssertionError("Не удалось нажать: $sel") }
+    }
+
+    /** Ответить в тренировке: нажатие могло прийтись на уходящий экран — тогда нажимаем ещё раз. */
+    private fun answer(sel: Sel) {
+        repeat(3) {
+            tap(sel, scroll = true)
+            if (dev.wait(Until.hasObject(By.text("Дальше")), 3000)) return
+        }
+        need(By.text("Дальше"))
     }
 
     private fun snapshotBounds(sel: Sel): android.graphics.Rect? {
