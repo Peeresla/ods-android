@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Первый кадр — тёмно-синий, как фон заставки с розой ветров -->
+    <style name="Theme.Ods" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/navy</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Подпись под иконкой — «ОДС», как у веб-версии -->
+    <string name="app_label">ОДС</string>
+</resources>

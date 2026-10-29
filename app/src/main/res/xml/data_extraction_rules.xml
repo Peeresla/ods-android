@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Резервное копирование Android: прогресс можно, сохранённый ключ банка и кэш — нет -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="unlock.xml" />
+        <exclude domain="file" path="bank.enc.json" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="unlock.xml" />
+        <exclude domain="file" path="bank.enc.json" />
+    </device-transfer>
+</data-extraction-rules>

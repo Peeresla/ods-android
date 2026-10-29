@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Та же иконка, что у веб-версии: лист с проверкой. Координаты — в пикселях исходной иконки 512×512 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path android:fillColor="#FFFFFF" android:pathData="M150,115H307L362,170V397H150Z" />
+    <path android:fillColor="#C4CBDD" android:pathData="M307,115L362,170H307Z" />
+    <path android:strokeColor="#BEC8DA" android:strokeWidth="13" android:strokeLineCap="round"
+        android:pathData="M182,196H319M182,231H299M182,266H319M182,300H259" />
+    <path android:strokeColor="#F07A1A" android:strokeWidth="36" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:pathData="M234,320L282,368L398,236" />
+</vector>

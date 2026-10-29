@@ -1,0 +1,54 @@
+# Создаёт постоянный ключ подписи APK и сохраняет его прямо в секреты репозитория.
+# Запускается один раз вручную: Actions → «Создать ключ подписи» → Run workflow.
+# Ключ нигде не показывается. Если ключ уже есть, запуск ничего не меняет.
+name: Создать ключ подписи
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка доступа и того, что ключа ещё нет
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Нет секрета SECRETS_TOKEN. Создайте его по шагам из README (раздел «Ключ подписи»)."
+            exit 1
+          fi
+          if ! gh secret list -R "$REPO" > secrets.txt; then
+            echo "::error::Ключ SECRETS_TOKEN не подходит: нужен доступ к ods-android с правом Secrets: Read and write."
+            exit 1
+          fi
+          if grep -q '^ODS_KEYSTORE_BASE64' secrets.txt; then
+            echo "::error::Ключ подписи уже создан. Второй раз не создаю — иначе новые версии не установятся поверх старой."
+            exit 1
+          fi
+
+      - name: Создание ключа и запись в секреты
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          PASS=$(openssl rand -hex 24)
+          echo "::add-mask::$PASS"
+          keytool -genkeypair -keystore release.jks -storetype PKCS12 -alias ods -keyalg RSA -keysize 4096 \
+            -validity 36500 -storepass "$PASS" -keypass "$PASS" -dname "CN=ODS Trainer" > /dev/null 2>&1
+          base64 -w0 release.jks | gh secret set ODS_KEYSTORE_BASE64 -R "$REPO"
+          printf '%s' "$PASS" | gh secret set ODS_KEYSTORE_PASSWORD -R "$REPO"
+          printf '%s' "ods" | gh secret set ODS_KEY_ALIAS -R "$REPO"
+          printf '%s' "$PASS" | gh secret set ODS_KEY_PASSWORD -R "$REPO"
+          rm -f release.jks
+          echo "Ключ подписи создан и сохранён в секретах."
+
+      - name: Запуск сборки APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build.yml -R "${{ github.repository }}" --ref main
