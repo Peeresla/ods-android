@@ -58,6 +58,7 @@ fun TrainScreen(vm: AppViewModel) {
             val cur = s.current ?: return
             val answered = cur.chosen != null
             val bring = remember { BringIntoViewRequester() }
+            val haptic = rememberHaptics(vm)
             ScreenScroll(
                 bottomBar = if (answered) {
                     { OdsButton("Дальше", { vm.trainNext() }, kind = BtnKind.Primary, block = true, delayed = true) }
@@ -94,7 +95,10 @@ fun TrainScreen(vm: AppViewModel) {
                                     look = look,
                                     enabled = chosen == null,
                                     animateKey = if (t.animate && chosen != null && look != OptionLook.Normal) "${key.seq}:${key.id}:$chosen" else null,
-                                    onClick = { vm.trainAnswer(orig) },
+                                    onClick = {
+                                        haptic(if (orig == key.question.correct) Haptic.Correct else Haptic.Wrong)
+                                        vm.trainAnswer(orig)
+                                    },
                                 )
                             }
                         }

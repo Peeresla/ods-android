@@ -2,4 +2,6 @@
 <resources>
     <!-- Подпись под иконкой — «ОДС», как у веб-версии -->
     <string name="app_label">ОДС</string>
+    <string name="widget_description">Серия дней и норма на сегодня</string>
+    <string name="widget_label">Серия дней</string>
 </resources>

@@ -105,6 +105,7 @@ private fun ExamQuestion(vm: AppViewModel, state: AppState, b: Bank, pos: Int, n
     val isLast = pos == total - 1
     val remaining = examRemaining(ex, now)
     val done = answeredCount(ex)
+    val haptic = rememberHaptics(vm)
     ScreenScroll(
         bottomBar = {
             ButtonRow {
@@ -131,7 +132,10 @@ private fun ExamQuestion(vm: AppViewModel, state: AppState, b: Bank, pos: Int, n
                     look = if (selected) OptionLook.Selected else OptionLook.Normal,
                     enabled = true,
                     animateKey = if (selected) "$id:$orig" else null,
-                    onClick = { vm.examChoose(orig) },
+                    onClick = {
+                        haptic(Haptic.Tap)
+                        vm.examChoose(orig)
+                    },
                 )
             }
         }

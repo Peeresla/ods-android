@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,6 +97,8 @@ fun SettingsScreen(vm: AppViewModel) {
                 }
             }
         }
+
+        ReminderSection(vm)
 
         SectionTitle("Резервная копия")
         OdsCard(gap = 12.dp) {
@@ -209,5 +212,83 @@ fun UnlockScreen(vm: AppViewModel) {
                 enabled = !unlocking,
             )
         }
+    }
+}
+
+/** Этап 2: вечернее напоминание и виброотклик. Настройки — только этого телефона, в резервную копию не попадают. */
+@Composable
+private fun ReminderSection(vm: AppViewModel) {
+    val context = LocalContext.current
+    val extras by vm.extras.collectAsState()
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) vm.setReminder(true) else vm.showToast("Без разрешения на уведомления напоминание не придёт")
+    }
+    val time = "%02d:%02d".format(java.util.Locale.ROOT, extras.hour, extras.minute)
+
+    SectionTitle("Напоминание")
+    OdsCard(gap = 12.dp) {
+        SwitchRow("Напомнить вечером, если норма на сегодня не выполнена", extras.reminderOn) { on ->
+            if (on && android.os.Build.VERSION.SDK_INT >= 33 &&
+                androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                permission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                vm.setReminder(on)
+            }
+        }
+        if (extras.reminderOn) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                T("Время", Modifier.weight(1f))
+                OdsButton(time, {
+                    android.app.TimePickerDialog(context, { _, h, m -> vm.setReminderTime(h, m) }, extras.hour, extras.minute, true).show()
+                }, Modifier.widthIn(min = 96.dp))
+            }
+            Muted("Слова — от начальника ЦУКС, как на главной. Если норма уже выполнена, напоминания не будет.")
+            OdsButton("Проверить уведомление", { vm.testReminder() }, block = true)
+            Muted("На телефонах Tecno (HiOS) система может закрывать приложения в фоне, и напоминание не придёт. Обычно помогает: «Настройки приложения» → «Батарея» → «Без ограничений», а в приложении «Phone Master» → «Автозапуск» — включить ОДС.")
+            OdsButton("Настройки приложения", { openAppSettings(context) }, block = true)
+        }
+    }
+
+    SectionTitle("Отклик")
+    OdsCard {
+        SwitchRow("Виброотклик при ответе", extras.haptics) { vm.setHaptics(it) }
+    }
+}
+
+@Composable
+private fun SwitchRow(text: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val c = LocalOdsColors.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .toggleable(value = checked, role = androidx.compose.ui.semantics.Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        T(text, Modifier.weight(1f))
+        androidx.compose.material3.Switch(
+            checked = checked,
+            onCheckedChange = null,
+            colors = androidx.compose.material3.SwitchDefaults.colors(
+                checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+                checkedTrackColor = c.accent,
+                checkedBorderColor = c.accent,
+                uncheckedThumbColor = c.muted,
+                uncheckedTrackColor = c.surface2,
+                uncheckedBorderColor = c.border,
+            ),
+        )
+    }
+}
+
+private fun openAppSettings(context: Context) {
+    runCatching {
+        context.startActivity(
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
     }
 }

@@ -35,7 +35,13 @@ import io.github.peeresla.ods.core.sanitizeExam
 import io.github.peeresla.ods.core.startExam
 import io.github.peeresla.ods.core.today
 import io.github.peeresla.ods.core.withScenario
+import io.github.peeresla.ods.core.bossPhrase
+import io.github.peeresla.ods.core.streakStatus
 import io.github.peeresla.ods.data.BankRepository
+import io.github.peeresla.ods.extras.ExtrasPrefs
+import io.github.peeresla.ods.extras.ReminderNotifier
+import io.github.peeresla.ods.extras.Scheduler
+import io.github.peeresla.ods.extras.StreakWidget
 import io.github.peeresla.ods.data.KeyStorage
 import io.github.peeresla.ods.data.StateStore
 import kotlinx.coroutines.Dispatchers
@@ -92,6 +98,9 @@ data class ModalRequest(
 
 data class ToastMsg(val text: String, val id: Long)
 
+/** Настройки этого устройства (этап 2): напоминание и виброотклик. */
+data class ExtrasUi(val reminderOn: Boolean, val hour: Int, val minute: Int, val haptics: Boolean)
+
 class AppViewModel(app: Application, private val saved: SavedStateHandle) : AndroidViewModel(app) {
     private val store = StateStore(app)
     private val keys = KeyStorage(app)
@@ -140,6 +149,10 @@ class AppViewModel(app: Application, private val saved: SavedStateHandle) : Andr
     private val _ready = MutableStateFlow(false)
     /** Запуск закончен (банк загружен или ясно, что его нет) — можно убирать заставку. */
     val ready: StateFlow<Boolean> = _ready.asStateFlow()
+
+    private val prefs = ExtrasPrefs(app)
+    private val _extras = MutableStateFlow(readExtras())
+    val extras: StateFlow<ExtrasUi> = _extras.asStateFlow()
 
     private var saveJob: Job? = null
     private var tickJob: Job? = null
@@ -221,6 +234,12 @@ class AppViewModel(app: Application, private val saved: SavedStateHandle) : Andr
             if (!store.save(snapshot) && !saveWarned) {
                 saveWarned = true
                 showToast("Не удалось сохранить прогресс на устройстве")
+            }
+            withContext(Dispatchers.IO) {
+                val app = getApplication<Application>()
+                StreakWidget.updateAll(app, snapshot)
+                // Норма выполнена — вечернее напоминание уже не нужно
+                if (streakStatus(snapshot.activity, clock.today()).doneToday) ReminderNotifier.cancel(app)
             }
         }
     }
@@ -494,6 +513,39 @@ class AppViewModel(app: Application, private val saved: SavedStateHandle) : Andr
     }
 
     fun offlineReady(): Boolean = repo.hasCache()
+
+    /* ---------------- Напоминание и виброотклик ---------------- */
+
+    private fun readExtras() = ExtrasUi(prefs.reminderOn, prefs.reminderHour, prefs.reminderMinute, prefs.haptics)
+
+    fun setReminder(on: Boolean) {
+        prefs.reminderOn = on
+        _extras.value = readExtras()
+        Scheduler.scheduleReminder(getApplication())
+    }
+
+    fun setReminderTime(hour: Int, minute: Int) {
+        prefs.reminderHour = hour
+        prefs.reminderMinute = minute
+        _extras.value = readExtras()
+        Scheduler.scheduleReminder(getApplication())
+    }
+
+    fun setHaptics(on: Boolean) {
+        prefs.haptics = on
+        _extras.value = readExtras()
+    }
+
+    /** Показать уведомление прямо сейчас — проверить, что оно приходит. */
+    fun testReminder() {
+        val st = streakStatus(_state.value.activity, clock.today())
+        val app = getApplication<Application>()
+        if (!ReminderNotifier.canNotify(app)) {
+            showToast("Уведомления для приложения выключены в настройках Android")
+            return
+        }
+        ReminderNotifier.show(app, bossPhrase(st))
+    }
 
     /** Дневная норма (для текста на главной). */
     val dailyGoal: Int get() = DAILY_GOAL

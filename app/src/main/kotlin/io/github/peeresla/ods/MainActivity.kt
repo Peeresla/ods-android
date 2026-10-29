@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.github.peeresla.ods.extras.Scheduler
 import io.github.peeresla.ods.ui.AppRoot
 import io.github.peeresla.ods.ui.OdsTheme
 
@@ -38,6 +39,8 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         reduceMotion = animationsOff()
+        // Будильники могли пропасть (принудительная остановка, «очистка» на HiOS) — ставим заново
+        Scheduler.rescheduleAll(this)
         vm.onForeground()
     }
 

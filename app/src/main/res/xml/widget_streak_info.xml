@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Виджет «Серия дней». Обновляется сам после каждого ответа и в полночь; раз в 30 минут — запасной вариант. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="60dp"
+    android:minResizeWidth="140dp"
+    android:minResizeHeight="50dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="1"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_streak"
+    android:previewLayout="@layout/widget_streak"
+    android:description="@string/widget_description"
+    android:widgetCategory="home_screen" />
