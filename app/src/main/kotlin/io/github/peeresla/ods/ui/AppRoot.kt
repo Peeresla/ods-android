@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.using
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -154,18 +153,24 @@ private fun screenTitle(r: Route, bank: Bank?): String {
  * назад — наоборот, уходящий экран остаётся сверху.
  */
 private fun screenTransition(nav: Nav, reduce: Boolean): ContentTransform {
-    if (reduce) return (fadeIn(tween(0)) togetherWith fadeOut(tween(0))).using(SizeTransform(clip = false))
+    if (reduce) return ContentTransform(fadeIn(tween(0)), fadeOut(tween(0)), sizeTransform = null)
     val d = 340
     val spec = tween<IntOffset>(d, easing = Easings.Out)
     return when (nav) {
-        Nav.Forward -> (slideInHorizontally(spec) { it } togetherWith
-            (slideOutHorizontally(spec) { -it / 4 } + fadeOut(tween(d, easing = Easings.Out), targetAlpha = 0.6f)))
-            .apply { targetContentZIndex = 1f }
-        Nav.Back -> ((slideInHorizontally(spec) { -it / 4 } + fadeIn(tween(d, easing = Easings.Out), initialAlpha = 0.6f)) togetherWith
-            slideOutHorizontally(spec) { it })
-            .apply { targetContentZIndex = -1f }
-        Nav.Fade -> fadeIn(tween(250, easing = Easings.EaseOut)) togetherWith fadeOut(tween(180, easing = Easings.EaseIn))
-    }.using(SizeTransform(clip = false))
+        Nav.Forward -> ContentTransform(
+            slideInHorizontally(spec) { it },
+            slideOutHorizontally(spec) { -it / 4 } + fadeOut(tween(d, easing = Easings.Out), targetAlpha = 0.6f),
+            targetContentZIndex = 1f,
+            sizeTransform = null,
+        )
+        Nav.Back -> ContentTransform(
+            slideInHorizontally(spec) { -it / 4 } + fadeIn(tween(d, easing = Easings.Out), initialAlpha = 0.6f),
+            slideOutHorizontally(spec) { it },
+            targetContentZIndex = -1f,
+            sizeTransform = null,
+        )
+        Nav.Fade -> ContentTransform(fadeIn(tween(250, easing = Easings.EaseOut)), fadeOut(tween(180, easing = Easings.EaseIn)), sizeTransform = null)
+    }
 }
 
 @Composable

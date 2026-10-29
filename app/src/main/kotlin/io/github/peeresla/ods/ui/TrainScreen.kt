@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.using
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -117,14 +116,16 @@ private data class QuestionKey(val seq: Int, val id: String, val question: Quest
 
 /** Смена вопроса — короткий сдвиг с растворением, без наложения текстов. */
 fun nudge(forward: Boolean, density: Density, reduce: Boolean): ContentTransform {
-    if (reduce) return (fadeIn(tween(0)) togetherWith fadeOut(tween(0))).using(SizeTransform(clip = false))
+    if (reduce) return ContentTransform(fadeIn(tween(0)), fadeOut(tween(0)), sizeTransform = null)
     val dx = with(density) { 40.dp.roundToPx() }
     val sign = if (forward) 1 else -1
     val inSpec = tween<IntOffset>(280, delayMillis = 100, easing = Easings.Out)
     val outSpec = tween<IntOffset>(130, easing = Easings.EaseIn)
-    return ((slideInHorizontally(inSpec) { sign * dx } + fadeIn(tween(280, delayMillis = 100, easing = Easings.Out))) togetherWith
-        (slideOutHorizontally(outSpec) { -sign * dx } + fadeOut(tween(130, easing = Easings.EaseIn))))
-        .using(SizeTransform(clip = false))
+    return ContentTransform(
+        slideInHorizontally(inSpec) { sign * dx } + fadeIn(tween(280, delayMillis = 100, easing = Easings.Out)),
+        slideOutHorizontally(outSpec) { -sign * dx } + fadeOut(tween(130, easing = Easings.EaseIn)),
+        sizeTransform = null,
+    )
 }
 
 @Composable
