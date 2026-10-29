@@ -5,6 +5,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
@@ -43,10 +46,13 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash ci/e2e.sh
 
-      - name: Скриншоты
+      # Скриншоты и журналы — в отдельную ветку e2e-results (её удобно смотреть прямо на GitHub с телефона)
+      - name: Результаты в ветку e2e-results
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-screens
-          path: e2e-out
-          retention-days: 14
+        run: |
+          mkdir -p e2e-out && cd e2e-out
+          echo "Проверка ${{ github.sha }} (${{ github.ref_name }})" > README.md
+          git init -q -b e2e-results
+          git add -A
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -qm "Проверка ${{ github.sha }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" e2e-results
