@@ -59,6 +59,8 @@ class WalkthroughTest {
         need(By.text("Неверный пароль"), 90_000)
         shot("unlock-wrong")
 
+        need(By.text("Открыть"), 90_000)
+        Thread.sleep(500)
         need(By.clazz("android.widget.EditText")).text = "test-pass-123"
         tap(By.text("Открыть"))
         need(By.textStartsWith("Тренировка"), 90_000)
@@ -119,7 +121,8 @@ class WalkthroughTest {
         Thread.sleep(600)
         shot("exam-result")
         tap(By.text("На главную"), scroll = true)
-        need(By.textStartsWith("Тренировка"))
+        need(By.text("Тренажёр МЧС"))
+        Thread.sleep(800)
         Thread.sleep(600)
 
         // Ошибки
